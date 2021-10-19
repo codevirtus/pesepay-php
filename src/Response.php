@@ -5,12 +5,14 @@ class Response {
     private $referenceNumber;
     private $pollUrl;
     private $redirectUrl;
+    private $paid;
 
-    public function __construct($referenceNumber, $pollUrl, $redirectUrl = null) {
+    public function __construct($referenceNumber, $pollUrl, $redirectUrl = null, $paid = false) {
         $this->success = true;
         $this->referenceNumber = $referenceNumber;
         $this->pollUrl = $pollUrl;
         $this->redirectUrl = $redirectUrl;
+        $this->paid = $paid;
     }
 
     public function success() {
@@ -27,6 +29,10 @@ class Response {
 
     public function redirectUrl() {
         return $this->redirectUrl;
+    }
+
+    public function paid() {
+        return $this->paid;
     }
 }
 

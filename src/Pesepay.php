@@ -13,7 +13,7 @@ class Pesepay
     /**
      * Check payment status API endpoint
     */
-    const CHECK_PAYMENT_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/check-payment';
+    const CHECK_PAYMENT_URL = 'https://api.test.pesepay.com/api/payments-engine/v1/payments/check-payment';
     
     /**
      * Make Seamless payment API Endpoint
@@ -44,6 +44,27 @@ class Pesepay
         $this->encryptionKey = $encryptionKey;
     }
 
+    public function checkPayment($referenceNumber) {
+        $url = self::CHECK_PAYMENT_URL.'?referenceNumber='.$referenceNumber;
+        return $this->pollTransaction($url);
+    }
+
+    public function pollTransaction($pollUrl) {
+        $response = $this->initCurlRequest("GET", $pollUrl);
+
+        if ($response instanceof ErrorResponse) 
+            return $response;
+
+        $decryptedData = $this->decrypt($response['payload']);
+
+        $jsonDecoded = json_decode($decryptedData, true);
+        $referenceNumber = $jsonDecoded['referenceNumber'];
+        $pollUrl = $jsonDecoded['pollUrl'];
+        $paid = $jsonDecoded['transactionStatus'] == 'SUCCESS';
+
+        return new Response($referenceNumber, $pollUrl, null, $paid);
+    }
+
     public function initiateTransaction($transaction) {
         if ($this->resultUrl == null)
             throw new \InvalidArgumentException('Result url has not beeen specified.');
@@ -68,7 +89,7 @@ class Pesepay
         $jsonDecoded = json_decode($decryptedData, true);
         $referenceNumber = $jsonDecoded['referenceNumber'];
         $pollUrl = $jsonDecoded['pollUrl'];
-        $redirectUrl = $jsonDecoded['pollUrl'];
+        $redirectUrl = $jsonDecoded['redirectUrl'];
 
         return new Response($referenceNumber, $pollUrl, $redirectUrl);
     }
@@ -138,7 +159,7 @@ class Pesepay
         return new Payment($currencyCode, $paymentMethodCode, $customer);
     }
 
-    private function initCurlRequest($requestType, $url, $payload) {
+    private function initCurlRequest($requestType, $url, $payload = null) {
         $headers = [
             'key: '.$this->integrationKey,
             'Content-Type: application/json',

@@ -15,10 +15,26 @@ $payment = $pesepay->createPayment('ZWL', 'PZW201', 'sean@quatrohaus.com');
 //     $referenceNumber = $response->referenceNumber();
 //     $pollUrl = $response->pollUrl();
 
+//     echo $pollUrl;
+
 // } else {
 //     $errorMsg = $response->message();
 //     echo $errorMsg;
 // }
+
+// $pollUrl = 'https://api.test.pesepay.com/api/payments-engine/v1/payments/check-payment?referenceNumber=20211019160257755-D5CB42BC';
+// $refNo = '20211019160257755-D5CB42BC';
+
+// $response = $pesepay->checkPayment($refNo);
+
+// if ($response->success()) {
+//     $paid = $response->paid();
+//     echo $paid ? 'PAID' : 'NOT PAID';
+// } else {
+//     $errorMsg = $response->message();
+//     echo $errorMsg;
+// }
+
 
 // $transaction = $pesepay->createTransaction(19, '004-00019', 'Moonlight Membership', 1.00, 'ZWL', 'Online Payment');
 
@@ -33,16 +49,16 @@ $payment = $pesepay->createPayment('ZWL', 'PZW201', 'sean@quatrohaus.com');
 //     echo $errorMsg;
 // }
 
-$referenceNumber = '20211019154735564-A02C05A4';
+// $referenceNumber = '20211019154735564-A02C05A4';
 
-$response = $pesepay->makePayment($payment, $referenceNumber, ['customerPhoneNumber'=>'0773806130']);
-if ($response->success()) {
-    $referenceNumber = $response->referenceNumber();
-    $pollUrl = $response->pollUrl();
+// $response = $pesepay->makePayment($payment, $referenceNumber, ['customerPhoneNumber'=>'0773806130']);
+// if ($response->success()) {
+//     $referenceNumber = $response->referenceNumber();
+//     $pollUrl = $response->pollUrl();
     
-} else {
-    $errorMsg = $response->message();
-    echo $errorMsg;
-}
+// } else {
+//     $errorMsg = $response->message();
+//     echo $errorMsg;
+// }
 
 ?>
