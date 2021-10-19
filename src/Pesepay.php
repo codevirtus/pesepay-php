@@ -5,6 +5,7 @@ include_once('Customer.php');
 include_once('Amount.php');
 include_once('Response.php');
 include_once('ErrorResponse.php');
+include_once('Transaction.php');
 
 
 class Pesepay
@@ -22,12 +23,12 @@ class Pesepay
     /**
      * Make payment API endpoint
     */
-    const MAKE_PAYMENT_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/make-payment/secure';
+    const MAKE_PAYMENT_URL = 'https://api.test.pesepay.com/api/payments-engine/v1/payments/make-payment/secure';
     
     /**
      * Initiate payment API Endpoint
     */
-    const INITIATE_PAYMENT_URL = 'https://api.pesepay.com/api/payments-engine/v1/payments/initiate';
+    const INITIATE_PAYMENT_URL = 'https://api.test.pesepay.com/api/payments-engine/v1/payments/initiate';
 
     const ALGORITHM = 'AES-256-CBC';
 
@@ -35,19 +36,69 @@ class Pesepay
 
     private $integrationKey;
     private $encryptionKey;
-    private $headers;
     public $resultUrl;
     public $returnUrl;
 
     public function __construct($integrationKey, $encryptionKey) {
         $this->integrationKey = $integrationKey;
         $this->encryptionKey = $encryptionKey;
-        // $this->headers = { 'key': integrationKey };
+    }
+
+    public function initiateTransaction($transaction) {
+        if ($this->resultUrl == null)
+            throw new \InvalidArgumentException('Result url has not beeen specified.');
+
+        if ($this->returnUrl == null)
+            throw new \InvalidArgumentException('Return url has not been specified.');
+
+        $transaction->resultUrl = $this->resultUrl;
+        $transaction->returnUrl = $this->returnUrl;
+
+        $encryptedData = $this->encrypt(json_encode($transaction));
+
+        $payload = json_encode(['payload'=>$encryptedData]);
+
+        $response = $this->initCurlRequest("POST", self::INITIATE_PAYMENT_URL, $payload);
+
+        if ($response instanceof ErrorResponse) 
+            return $response;
+
+        $decryptedData = $this->decrypt($response['payload']);
+
+        $jsonDecoded = json_decode($decryptedData, true);
+        $referenceNumber = $jsonDecoded['referenceNumber'];
+        $pollUrl = $jsonDecoded['pollUrl'];
+        $redirectUrl = $jsonDecoded['pollUrl'];
+
+        return new Response($referenceNumber, $pollUrl, $redirectUrl);
+    }
+
+    public function makePayment($payment, $referenceNumber, $requiredFields = null, $merchantReference = null) {
+        $payment->referenceNumber = $referenceNumber;
+        $payment->setRequiredFields($requiredFields);
+        $payment->merchantReference = $merchantReference;
+        
+        $encryptedData = $this->encrypt(json_encode($payment));
+
+        $payload = json_encode(['payload'=>$encryptedData]);
+
+        $response = $this->initCurlRequest("POST", self::MAKE_PAYMENT_URL, $payload);
+
+        if ($response instanceof ErrorResponse) 
+            return $response;
+
+        $decryptedData = $this->decrypt($response['payload']);
+
+        $jsonDecoded = json_decode($decryptedData, true);
+        $referenceNumber = $jsonDecoded['referenceNumber'];
+        $pollUrl = $jsonDecoded['pollUrl'];
+
+        return new Response($referenceNumber, $pollUrl);
     }
     
     public function makeSeamlessPayment($payment, $reasonForPayment, $amount, $requiredFields = null) {
         if ($this->resultUrl == null)
-            throw new Error('Result url has not beeen specified.');
+            throw new \InvalidArgumentException('Result url has not beeen specified.');
         
         $payment->resultUrl = $this->resultUrl;
         $payment->returnUrl = $this->returnUrl;
@@ -72,6 +123,10 @@ class Pesepay
         $pollUrl = $jsonDecoded['pollUrl'];
 
         return new Response($referenceNumber, $pollUrl);
+    }
+
+    public function createTransaction($appId, $appCode, $appName, $amount, $currencyCode, $paymentReason, $merchantReference = null) {
+        return new Transaction($appId, $appCode, $appName, $amount, $currencyCode, $paymentReason, $merchantReference);
     }
 
     public function createPayment($currencyCode, $paymentMethodCode, $email = null, $phone = null, $name = null) {

@@ -9,12 +9,37 @@ $pesepay->resultUrl = "http://example.com/gateway/return";
 
 $payment = $pesepay->createPayment('ZWL', 'PZW201', 'sean@quatrohaus.com');
 
-$response = $pesepay->makeSeamlessPayment($payment, 'Online Transaction', 1, ['customerPhoneNumber'=>'0773806130']);
+// $response = $pesepay->makeSeamlessPayment($payment, 'Online Transaction', 1, ['customerPhoneNumber'=>'0773806130']);
 
+// if ($response->success()) {
+//     $referenceNumber = $response->referenceNumber();
+//     $pollUrl = $response->pollUrl();
+
+// } else {
+//     $errorMsg = $response->message();
+//     echo $errorMsg;
+// }
+
+// $transaction = $pesepay->createTransaction(19, '004-00019', 'Moonlight Membership', 1.00, 'ZWL', 'Online Payment');
+
+// $response = $pesepay->initiateTransaction($transaction);
+
+// if ($response->success()) {
+//     $referenceNumber = $response->referenceNumber();
+//     $redirectUrl = $response->redirectUrl();
+    
+// } else {
+//     $errorMsg = $response->message();
+//     echo $errorMsg;
+// }
+
+$referenceNumber = '20211019154735564-A02C05A4';
+
+$response = $pesepay->makePayment($payment, $referenceNumber, ['customerPhoneNumber'=>'0773806130']);
 if ($response->success()) {
     $referenceNumber = $response->referenceNumber();
     $pollUrl = $response->pollUrl();
-
+    
 } else {
     $errorMsg = $response->message();
     echo $errorMsg;
