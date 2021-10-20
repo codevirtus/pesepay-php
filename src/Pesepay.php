@@ -1,12 +1,13 @@
 <?php
 
+namespace Pesepay;
+
 include_once('Payment.php');
 include_once('Customer.php');
 include_once('Amount.php');
 include_once('Response.php');
 include_once('ErrorResponse.php');
 include_once('Transaction.php');
-
 
 class Pesepay
 {

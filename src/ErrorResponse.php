@@ -1,5 +1,7 @@
 <?php
 
+namespace Pesepay;
+
 class ErrorResponse {
     private $success;
     private $message;

@@ -1,5 +1,7 @@
 <?php 
 
+namespace Pesepay;
+
 class Customer {
     public $email;
     public $phoneNumber;

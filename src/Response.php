@@ -1,5 +1,7 @@
 <?php
 
+namespace Pesepay;
+
 class Response {
     private $success;
     private $referenceNumber;

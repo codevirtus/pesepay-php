@@ -1,5 +1,7 @@
 <?php
 
+namespace Pesepay;
+
 class Payment {
     public $currencyCode;
     public $paymentMethodCode;

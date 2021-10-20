@@ -1,5 +1,7 @@
 <?php
 
+namespace Pesepay;
+
 require_once('Amount.php');
 
 class Transaction {
