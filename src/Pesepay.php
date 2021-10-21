@@ -42,11 +42,8 @@ class Pesepay
 
     public function checkPayment($referenceNumber) {
         $url = self::CHECK_PAYMENT_URL.'?referenceNumber='.$referenceNumber;
-        return $this->pollTransaction($url);
-    }
-
-    public function pollTransaction($pollUrl) {
-        $response = $this->initCurlRequest("GET", $pollUrl);
+        
+        $response = $this->initCurlRequest("GET", $url);
 
         if ($response instanceof ErrorResponse) 
             return $response;
