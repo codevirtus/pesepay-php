@@ -56,7 +56,6 @@ if ($response->success()) {
 ```
 
 ### Make redirect payment
-#### Step 1: Initiate a transaction
 
 Create a transaction
 ```php
@@ -68,39 +67,11 @@ Initiate the transaction
 $response = $pesepay->initiateTransaction($transaction);
 
 if ($response->success()) {
-    # Save the reference number (used to check the status of a transaction and to make the payment)
+    # Save the reference number and/or pollUrl (used to check the status of a transaction)
     $referenceNumber = $response->referenceNumber();
-    # Get the redirect url and use it as you see fit   
-    $redirectUrl = $response->redirectUrl();
-    
-} else {
-    # Get error message
-    $errorMessage = $response->message();
-}
-```
-
-#### Step 2: Make the payment
-
-Create the payment 
-##### NB: Customer email or number should be provided
-
-```php
-$payment = $pesepay->createPayment('CURRECNCY_CODE', 'PAYMENT_METHOD_CODE', 'CUSTOMER_EMAIL(OPTIONAL)', 'CUSTOMER_PHONE_NUMBER(OPTIONAL)', 'CUSTOMER_NAME(OPTIONAL)');
-```
-
-Create a `object` of the required fields (if any)
-
-```php
-$requiredFields = ['requiredFieldName'=>'requiredFieldValue'];
-```
-
-Send of the payment
-```php
-$response = $pesepay->makePayment($payment, $referenceNumber, $requiredFields);
-
-if ($response->success()) {
-    # Save the poll url (used to check the status of a transaction)
     $pollUrl = $response->pollUrl();
+    # Get the redirect url and redirect user to complete transaction   
+    $redirectUrl = $response->redirectUrl();
     
 } else {
     # Get error message

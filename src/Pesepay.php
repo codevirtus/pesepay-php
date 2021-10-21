@@ -22,11 +22,6 @@ class Pesepay
     const MAKE_SEAMLESS_PAYMENT_URL = 'https://api.test.pesepay.com/api/payments-engine/v2/payments/make-payment';
     
     /**
-     * Make payment API endpoint
-    */
-    const MAKE_PAYMENT_URL = 'https://api.test.pesepay.com/api/payments-engine/v1/payments/make-payment/secure';
-    
-    /**
      * Initiate payment API Endpoint
     */
     const INITIATE_PAYMENT_URL = 'https://api.test.pesepay.com/api/payments-engine/v1/payments/initiate';
@@ -94,28 +89,6 @@ class Pesepay
 
         return new Response($referenceNumber, $pollUrl, $redirectUrl);
     }
-
-    public function makePayment($payment, $referenceNumber, $requiredFields = null) {
-        $payment->referenceNumber = $referenceNumber;
-        $payment->setRequiredFields($requiredFields);
-        
-        $encryptedData = $this->encrypt(json_encode($payment));
-
-        $payload = json_encode(['payload'=>$encryptedData]);
-
-        $response = $this->initCurlRequest("POST", self::MAKE_PAYMENT_URL, $payload);
-
-        if ($response instanceof ErrorResponse) 
-            return $response;
-
-        $decryptedData = $this->decrypt($response['payload']);
-
-        $jsonDecoded = json_decode($decryptedData, true);
-        $referenceNumber = $jsonDecoded['referenceNumber'];
-        $pollUrl = $jsonDecoded['pollUrl'];
-
-        return new Response($referenceNumber, $pollUrl);
-    }
     
     public function makeSeamlessPayment($payment, $reasonForPayment, $amount, $requiredFields = null) {
         if ($this->resultUrl == null)
@@ -150,9 +123,7 @@ class Pesepay
         return new Transaction($amount, $currencyCode, $paymentReason, $merchantReference);
     }
 
-    public function createPayment($currencyCode, $paymentMethodCode, $email = null, $phone = null, $name = null) {
-        if ($email == null && $phone == null)
-            throw new \InvalidArgumentException('Email and/or phone number should be provided');
+    public function createPayment($currencyCode, $paymentMethodCode, $email, $phone = null, $name = null) {
 
         $customer = new Customer($email, $phone, $name);
         
