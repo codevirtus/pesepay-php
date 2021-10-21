@@ -42,7 +42,7 @@ $requiredFields = ['requiredFieldName'=>'requiredFieldValue'];
 
 Send of the payment
 ```php
-$response = $pesepay->makeSeamlessPayment($payment, 'Online Transaction', $AMOUNT, $requiredFields);
+$response = $pesepay->makeSeamlessPayment($payment, 'Online Transaction', $AMOUNT, $requiredFields, 'MERCHANT_REFERENCE(OPTIONAL)');
 
 if ($response->success()) {
     # Save the poll url and reference number (used to check the status of a transaction)
@@ -60,7 +60,7 @@ if ($response->success()) {
 
 Create a transaction
 ```php
-$transaction = $pesepay->createTransaction('APP_ID', 'APP_CODE', 'APP_NAME', $amount, 'CURRENCY_CODE', 'PAYMENT_REASON');
+$transaction = $pesepay->createTransaction($amount, 'CURRENCY_CODE', 'PAYMENT_REASON', 'MERCHANT_REFERENCE(OPTIONAL)');
 ```
 
 Initiate the transaction

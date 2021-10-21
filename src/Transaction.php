@@ -8,19 +8,11 @@ class Transaction {
     public $resultUrl;
     public $returnUrl;
     public $merchantReference;
-    public $applicationId;
-    public $applicationName;
-    public $applicationCode;
     public $amountDetails;
-    public $transactionType;
     public $reasonForPayment;
 
-    public function __construct($applicationId, $applicationCode, $applicationName, $amount, $currencyCode, $reasonForPayment, $merchantReference) {
-        $this->applicationId = $applicationId;
-        $this->applicationCode = $applicationCode;
-        $this->applicationName = $applicationName;
+    public function __construct($amount, $currencyCode, $reasonForPayment, $merchantReference) {
         $this->amountDetails = new Amount($amount, $currencyCode);
-        $this->transactionType = "BASIC";
         $this->reasonForPayment = $reasonForPayment;
         $this->merchantReference = $merchantReference;
     }

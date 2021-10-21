@@ -95,10 +95,9 @@ class Pesepay
         return new Response($referenceNumber, $pollUrl, $redirectUrl);
     }
 
-    public function makePayment($payment, $referenceNumber, $requiredFields = null, $merchantReference = null) {
+    public function makePayment($payment, $referenceNumber, $requiredFields = null) {
         $payment->referenceNumber = $referenceNumber;
         $payment->setRequiredFields($requiredFields);
-        $payment->merchantReference = $merchantReference;
         
         $encryptedData = $this->encrypt(json_encode($payment));
 
@@ -147,8 +146,8 @@ class Pesepay
         return new Response($referenceNumber, $pollUrl);
     }
 
-    public function createTransaction($appId, $appCode, $appName, $amount, $currencyCode, $paymentReason, $merchantReference = null) {
-        return new Transaction($appId, $appCode, $appName, $amount, $currencyCode, $paymentReason, $merchantReference);
+    public function createTransaction($amount, $currencyCode, $paymentReason, $merchantReference = null) {
+        return new Transaction($amount, $currencyCode, $paymentReason, $merchantReference);
     }
 
     public function createPayment($currencyCode, $paymentMethodCode, $email = null, $phone = null, $name = null) {
