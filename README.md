@@ -9,8 +9,9 @@ composer require codevirtus/pesepay
 ### Getting Started
 Import the library into your project/application
 
-```js  
-const { Pesepay } = require('pesepay')
+```php
+require_once 'path/to/vendor/autoload.php';
+use Pesepay\Payments\Pesepay
 ```
 
 Create an instance of the `Pesepay` class using your integration key and encryption key as supplied by Pesepay.

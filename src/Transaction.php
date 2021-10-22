@@ -1,6 +1,6 @@
 <?php
 
-namespace Pesepay;
+namespace Pesepay\Payments;
 
 require_once('Amount.php');
 

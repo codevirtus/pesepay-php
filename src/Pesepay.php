@@ -1,6 +1,6 @@
 <?php
 
-namespace Pesepay;
+namespace Pesepay\Payments;
 
 include_once('Payment.php');
 include_once('Customer.php');

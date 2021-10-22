@@ -1,6 +1,6 @@
 <?php
 
-namespace Pesepay;
+namespace Pesepay\Payments;
 
 class ErrorResponse {
     private $success;
