@@ -1,6 +1,6 @@
 <?php
 
-namespace Pesepay\Payments;
+namespace Codevirtus\Payments;
 
 class Amount {
     public $amount;

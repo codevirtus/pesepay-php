@@ -1,6 +1,6 @@
 <?php
 
-namespace Pesepay\Payments;
+namespace Codevirtus\Payments;
 
 include_once('Payment.php');
 include_once('Customer.php');
@@ -11,20 +11,21 @@ include_once('Transaction.php');
 
 class Pesepay
 {
+    const BASE_URL = "https://api.pesepay.com/api/payments-engine";
     /**
      * Check payment status API endpoint
     */
-    const CHECK_PAYMENT_URL = 'https://api.test.pesepay.com/api/payments-engine/v1/payments/check-payment';
+    const CHECK_PAYMENT_URL = self::BASE_URL.'/v1/payments/check-payment';
     
     /**
      * Make Seamless payment API Endpoint
     */
-    const MAKE_SEAMLESS_PAYMENT_URL = 'https://api.test.pesepay.com/api/payments-engine/v2/payments/make-payment';
+    const MAKE_SEAMLESS_PAYMENT_URL = self::BASE_URL.'/v2/payments/make-payment';
     
     /**
      * Initiate payment API Endpoint
     */
-    const INITIATE_PAYMENT_URL = 'https://api.test.pesepay.com/api/payments-engine/v1/payments/initiate';
+    const INITIATE_PAYMENT_URL = self::BASE_URL.'/v1/payments/initiate';
 
     const ALGORITHM = 'AES-256-CBC';
 

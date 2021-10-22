@@ -28,12 +28,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Pesepay\\Payments\\": "src/"
+            "Codevirtus\\Payments\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Pesepay\\Payments\\Tests\\": "tests"
+            "Codevirtus\\Payments\\Tests\\": "tests"
         }
     },
     "scripts": {
