@@ -40,10 +40,9 @@ class Pesepay
         $this->encryptionKey = $encryptionKey;
     }
 
-    public function checkPayment($referenceNumber) {
-        $url = self::CHECK_PAYMENT_URL.'?referenceNumber='.$referenceNumber;
+    public function pollTransaction($pollUrl) {
         
-        $response = $this->initCurlRequest("GET", $url);
+        $response = $this->initCurlRequest("GET", $pollUrl);
 
         if ($response instanceof ErrorResponse) 
             return $response;
@@ -56,6 +55,11 @@ class Pesepay
         $paid = $jsonDecoded['transactionStatus'] == 'SUCCESS';
 
         return new Response($referenceNumber, $pollUrl, null, $paid);
+    }
+
+    public function checkPayment($referenceNumber) {
+        $url = self::CHECK_PAYMENT_URL.'?referenceNumber='.$referenceNumber;
+        return $this->pollTransaction($url);
     }
 
     public function initiateTransaction($transaction) {

@@ -6,11 +6,7 @@
 # Node artifact files
 node_modules/
 dist/
-<<<<<<< HEAD
 Index.php
-=======
-test.ts
->>>>>>> dev-sean
 
 # Compiled Java class files
 *.class
@@ -26,10 +22,7 @@ test.ts
 
 # Maven
 target/
-<<<<<<< HEAD
 dist/
-=======
->>>>>>> dev-sean
 
 # JetBrains IDE
 .idea/
@@ -56,9 +49,3 @@ Thumbs.db
 *.mov
 *.wmv
 
-<<<<<<< HEAD
-=======
-
-.github/
-Index.php
->>>>>>> dev-sean

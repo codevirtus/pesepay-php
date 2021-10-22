@@ -46,8 +46,9 @@ Send of the payment
 $response = $pesepay->makeSeamlessPayment($payment, 'Online Transaction', $AMOUNT, $requiredFields, 'MERCHANT_REFERENCE(OPTIONAL)');
 
 if ($response->success()) {
-    # Save the reference number (used to check the status of a transaction)
+    # Save the reference number and/or poll url (used to check the status of a transaction)
     $referenceNumber = $response->referenceNumber();
+    $pollUrl = $response->pollUrl();
 
 } else {
     #Get Error Message
@@ -67,7 +68,7 @@ Initiate the transaction
 $response = $pesepay->initiateTransaction($transaction);
 
 if ($response->success()) {
-    # Save the reference number (used to check the status of a transaction)
+    # Save the reference number and/or poll url (used to check the status of a transaction)
     $referenceNumber = $response->referenceNumber();
     $pollUrl = $response->pollUrl();
     # Get the redirect url and redirect user to complete transaction   
@@ -80,8 +81,24 @@ if ($response->success()) {
 ```
 
 ### Check Payment Status
+#### Method 1: Using referenceNumber
 ```php
 $response = $pesepay->checkPayment($referenceNumber);
+
+if ($response->success()) {
+
+    if ($response->paid()) {
+        # Payment was successfull
+    }
+
+} else {
+    # Get error message
+    $errorMessage = $response->message();
+}
+```
+#### Method 2: Using poll url
+```php
+$response = $pesepay->pollTransaction($pollUrl);
 
 if ($response->success()) {
 
