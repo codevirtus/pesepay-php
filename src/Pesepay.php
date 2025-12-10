@@ -14,18 +14,18 @@ class Pesepay
     const BASE_URL = "https://api.pesepay.com/api/payments-engine";
     /**
      * Check payment status API endpoint
-    */
-    const CHECK_PAYMENT_URL = self::BASE_URL.'/v1/payments/check-payment';
-    
+     */
+    const CHECK_PAYMENT_URL = self::BASE_URL . '/v1/payments/check-payment';
+
     /**
      * Make Seamless payment API Endpoint
-    */
-    const MAKE_SEAMLESS_PAYMENT_URL = self::BASE_URL.'/v2/payments/make-payment';
-    
+     */
+    const MAKE_SEAMLESS_PAYMENT_URL = self::BASE_URL . '/v2/payments/make-payment';
+
     /**
      * Initiate payment API Endpoint
-    */
-    const INITIATE_PAYMENT_URL = self::BASE_URL.'/v1/payments/initiate';
+     */
+    const INITIATE_PAYMENT_URL = self::BASE_URL . '/v1/payments/initiate';
 
     const ALGORITHM = 'AES-256-CBC';
 
@@ -36,16 +36,18 @@ class Pesepay
     public $resultUrl;
     public $returnUrl;
 
-    public function __construct($integrationKey, $encryptionKey) {
+    public function __construct($integrationKey, $encryptionKey)
+    {
         $this->integrationKey = $integrationKey;
         $this->encryptionKey = $encryptionKey;
     }
 
-    public function pollTransaction($pollUrl) {
-        
+    public function pollTransaction($pollUrl)
+    {
+
         $response = $this->initCurlRequest("GET", $pollUrl);
 
-        if ($response instanceof ErrorResponse) 
+        if ($response instanceof ErrorResponse)
             return $response;
 
         $decryptedData = $this->decrypt($response['payload']);
@@ -55,15 +57,17 @@ class Pesepay
         $pollUrl = $jsonDecoded['pollUrl'];
         $paid = $jsonDecoded['transactionStatus'] == 'SUCCESS';
 
-        return new Response($referenceNumber, $pollUrl, null, $paid);
+        return new Response($referenceNumber, $pollUrl, null, $paid, $jsonDecoded);
     }
 
-    public function checkPayment($referenceNumber) {
-        $url = self::CHECK_PAYMENT_URL.'?referenceNumber='.$referenceNumber;
+    public function checkPayment($referenceNumber)
+    {
+        $url = self::CHECK_PAYMENT_URL . '?referenceNumber=' . $referenceNumber;
         return $this->pollTransaction($url);
     }
 
-    public function initiateTransaction($transaction) {
+    public function initiateTransaction($transaction)
+    {
         if ($this->resultUrl == null)
             throw new \InvalidArgumentException('Result url has not beeen specified.');
 
@@ -75,11 +79,11 @@ class Pesepay
 
         $encryptedData = $this->encrypt(json_encode($transaction));
 
-        $payload = json_encode(['payload'=>$encryptedData]);
+        $payload = json_encode(['payload' => $encryptedData]);
 
         $response = $this->initCurlRequest("POST", self::INITIATE_PAYMENT_URL, $payload);
 
-        if ($response instanceof ErrorResponse) 
+        if ($response instanceof ErrorResponse)
             return $response;
 
         $decryptedData = $this->decrypt($response['payload']);
@@ -89,27 +93,29 @@ class Pesepay
         $pollUrl = $jsonDecoded['pollUrl'];
         $redirectUrl = $jsonDecoded['redirectUrl'];
 
-        return new Response($referenceNumber, $pollUrl, $redirectUrl);
+        return new Response($referenceNumber, $pollUrl, $redirectUrl, $jsonDecoded);
     }
-    
-    public function makeSeamlessPayment($payment, $reasonForPayment, $amount, $requiredFields = null) {
+
+    public function makeSeamlessPayment($payment, $reasonForPayment, $amount, $requiredFields = null, $merchantReference = null)
+    {
         if ($this->resultUrl == null)
             throw new \InvalidArgumentException('Result url has not beeen specified.');
-        
+
         $payment->resultUrl = $this->resultUrl;
         $payment->returnUrl = $this->returnUrl;
         $payment->reasonForPayment = $reasonForPayment;
         $payment->amountDetails = new Amount($amount, $payment->currencyCode);
+        $payment->merchantReference = $merchantReference;
 
         $payment->setRequiredFields($requiredFields);
-        
+
         $encryptedData = $this->encrypt(json_encode($payment));
-        
-        $payload = json_encode(['payload'=>$encryptedData]);
+
+        $payload = json_encode(['payload' => $encryptedData]);
 
         $response = $this->initCurlRequest("POST", self::MAKE_SEAMLESS_PAYMENT_URL, $payload);
 
-        if ($response instanceof ErrorResponse) 
+        if ($response instanceof ErrorResponse)
             return $response;
 
         $decryptedData = $this->decrypt($response['payload']);
@@ -118,27 +124,30 @@ class Pesepay
         $referenceNumber = $jsonDecoded['referenceNumber'];
         $pollUrl = $jsonDecoded['pollUrl'];
 
-        return new Response($referenceNumber, $pollUrl);
+        return new Response($referenceNumber, $pollUrl, null, false, $jsonDecoded);
     }
 
-    public function createTransaction($amount, $currencyCode, $paymentReason, $merchantReference = null) {
+    public function createTransaction($amount, $currencyCode, $paymentReason, $merchantReference = null)
+    {
         return new Transaction($amount, $currencyCode, $paymentReason, $merchantReference);
     }
 
-    public function createPayment($currencyCode, $paymentMethodCode, $email, $phone = null, $name = null) {
+    public function createPayment($currencyCode, $paymentMethodCode, $email, $phone = null, $name = null)
+    {
 
         $customer = new Customer($email, $phone, $name);
-        
+
         return new Payment($currencyCode, $paymentMethodCode, $customer);
     }
 
-    private function initCurlRequest($requestType, $url, $payload = null) {
+    private function initCurlRequest($requestType, $url, $payload = null)
+    {
         $headers = [
-            'key: '.$this->integrationKey,
+            'key: ' . $this->integrationKey,
             'Content-Type: application/json',
             'Accept: application/json'
         ];
-        
+
         $curl = curl_init();
 
         curl_setopt_array($curl, [
@@ -146,13 +155,13 @@ class Pesepay
             CURLOPT_CUSTOMREQUEST => $requestType,
             CURLOPT_HTTPHEADER => $headers,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_USERAGENT      => 'cUrl'
+            CURLOPT_USERAGENT => 'cUrl'
         ]);
 
         if ($requestType == "POST") {
-            curl_setopt($curl,CURLOPT_POSTFIELDS, $payload);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $payload);
         }
-        
+
         $response = curl_exec($curl);
 
         $status_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
@@ -178,7 +187,6 @@ class Pesepay
      */
 
     private function encrypt($plainText)
-
     {
         // echo $this->encryptionKey;   
         try {
@@ -214,7 +222,6 @@ class Pesepay
      */
 
     private function decrypt($cipherText)
-
     {
         try {
             // Check secret length
