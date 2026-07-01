@@ -1,114 +1,182 @@
-## Installation
+# PesePay PHP SDK
 
-You can install the package via composer:
+A simple PHP SDK for integrating **PesePay** payments into your application.
+
+---
+
+# Installation
+
+Install the package via Composer:
 
 ```bash
 composer require codevirtus/pesepay
 ```
 
-### Getting Started
+---
 
-Import the library into your project/application
+# Getting Started
+
+## 1. Import the SDK
 
 ```php
-require_once 'path/to/vendor/autoload.php';
-use Codevirtus\Payments\Pesepay
+require_once 'vendor/autoload.php';
+
+use Codevirtus\Payments\Pesepay;
 ```
 
-Create an instance of the `Pesepay` class using your integration key and encryption key as supplied by Pesepay.
+## 2. Initialize the Client
+
+Create a new `Pesepay` instance using the credentials provided by PesePay.
 
 ```php
-$pesepay = new Pesepay("INTEGRATION KEY", "ENCRYPTION KEY");
+$pesepay = new Pesepay(
+    "INTEGRATION_KEY",
+    "ENCRYPTION_KEY"
+);
 ```
 
-Set return and result urls
+## 3. Configure Callback URLs
+
+Set the URLs that PesePay will use after processing a payment.
 
 ```php
-$pesepay->returnUrl = "http://example.com/gateway/return";
-$pesepay->resultUrl = "http://example.com/gateway/return";
+$pesepay->returnUrl = "https://example.com/gateway/return";
+$pesepay->resultUrl = "https://example.com/gateway/result";
 ```
 
-### Make seamless payment
+* **returnUrl** – Where the customer is redirected after completing payment.
+* **resultUrl** – Endpoint that receives the payment result.
 
-Create the payment
+---
 
-##### NB: Customer email or number should be provided
+# Seamless Payments
+
+Seamless payments allow customers to complete payment directly within your application.
+
+## Step 1: Create a Payment
+
+> **Note:** Either the customer's email address or phone number must be provided.
 
 ```php
-$payment = $pesepay->createPayment('CURRECNCY_CODE', 'PAYMENT_METHOD_CODE', 'CUSTOMER_EMAIL(OPTIONAL)', 'CUSTOMER_PHONE_NUMBER(OPTIONAL)', 'CUSTOMER_NAME(OPTIONAL)');
+$payment = $pesepay->createPayment(
+    'CURRENCY_CODE',
+    'PAYMENT_METHOD_CODE',
+    'CUSTOMER_EMAIL',          // Optional
+    'CUSTOMER_PHONE_NUMBER',   // Optional
+    'CUSTOMER_NAME'            // Optional
+);
 ```
 
-Create an `object` of the required fields (if any)
+---
+
+## Step 2: Provide Required Payment Fields
+
+Different payment methods require different fields.
+
+### Visa
 
 ```php
-# visa
-requiredFields = [
-"creditCardExpiryDate" => "09/23",
-"creditCardNumber" => "4867960000005461",
-"creditCardSecurityNumber" => "608"
-]
-
-# direct mobile payments e.g ecocash, innbucs
-requiredFields = [
-"customerPhoneNumber" => "0712345678",
-]
+$requiredFields = [
+    "creditCardExpiryDate" => "09/23",
+    "creditCardNumber" => "4867960000005461",
+    "creditCardSecurityNumber" => "608"
+];
 ```
 
-Send of the payment
+### Mobile Money (EcoCash, InnBucks, etc.)
 
 ```php
-$response = $pesepay->makeSeamlessPayment($payment, 'Online Transaction', $AMOUNT, $requiredFields, 'MERCHANT_REFERENCE(OPTIONAL)');
+$requiredFields = [
+    "customerPhoneNumber" => "0712345678"
+];
+```
+
+---
+
+## Step 3: Submit the Payment
+
+```php
+$response = $pesepay->makeSeamlessPayment(
+    $payment,
+    'Online Transaction',
+    $AMOUNT,
+    $requiredFields,
+    'MERCHANT_REFERENCE' // Optional
+);
 
 if ($response->success()) {
-    # Save the reference number and/or poll url (used to check the status of a transaction)
+
+    // Store these values to check payment status later
     $referenceNumber = $response->referenceNumber();
     $pollUrl = $response->pollUrl();
+
+    // Transaction details
     $amount = $response->amount();
     $currencyCode = $response->currencyCode();
     $transactionFee = $response->transactionServiceFee();
     $metaData = $response->transactionMetadata();
 
-    # whole response
+    // Full API response
     $data = $response->rawData();
-    # if using innbucs
+
+    // InnBucks-specific data
     $code = $response->metadataCode();
     $qrcode = $response->metadataQrCode();
 
 } else {
-    #Get Error Message
+
     $errorMessage = $response->message();
+
 }
 ```
 
-### Make redirect payment
+---
 
-Create a transaction
+# Redirect Payments
+
+Redirect payments send the customer to the PesePay checkout page to complete payment.
+
+## Step 1: Create a Transaction
 
 ```php
-$transaction = $pesepay->createTransaction($amount, 'CURRENCY_CODE', 'PAYMENT_REASON', 'MERCHANT_REFERENCE(OPTIONAL)');
+$transaction = $pesepay->createTransaction(
+    $amount,
+    'CURRENCY_CODE',
+    'PAYMENT_REASON',
+    'MERCHANT_REFERENCE' // Optional
+);
 ```
 
-Initiate the transaction
+---
+
+## Step 2: Initiate the Transaction
 
 ```php
 $response = $pesepay->initiateTransaction($transaction);
 
 if ($response->success()) {
-    # Save the reference number and/or poll url (used to check the status of a transaction)
+
+    // Save these values for future payment status checks
     $referenceNumber = $response->referenceNumber();
     $pollUrl = $response->pollUrl();
-    # Get the redirect url and redirect user to complete transaction
+
+    // Redirect the customer
     $redirectUrl = $response->redirectUrl();
 
 } else {
-    # Get error message
+
     $errorMessage = $response->message();
+
 }
 ```
 
-### Check Payment Status
+---
 
-#### Method 1: Using referenceNumber
+# Checking Payment Status
+
+You can verify a payment using either the transaction reference number or the poll URL returned when the payment was created.
+
+## Option 1: Check by Reference Number
 
 ```php
 $response = $pesepay->checkPayment($referenceNumber);
@@ -116,16 +184,19 @@ $response = $pesepay->checkPayment($referenceNumber);
 if ($response->success()) {
 
     if ($response->paid()) {
-        # Payment was successfull
+        // Payment successful
     }
 
 } else {
-    # Get error message
+
     $errorMessage = $response->message();
+
 }
 ```
 
-#### Method 2: Using poll url
+---
+
+## Option 2: Check by Poll URL
 
 ```php
 $response = $pesepay->pollTransaction($pollUrl);
@@ -133,11 +204,34 @@ $response = $pesepay->pollTransaction($pollUrl);
 if ($response->success()) {
 
     if ($response->paid()) {
-        # Payment was successfull
+        // Payment successful
     }
 
 } else {
-    # Get error message
+
     $errorMessage = $response->message();
+
 }
 ```
+
+---
+
+# Response Methods
+
+Most SDK responses provide the following helper methods:
+
+| Method                    | Description                                                    |
+| ------------------------- | -------------------------------------------------------------- |
+| `success()`               | Returns `true` if the request completed successfully.          |
+| `message()`               | Returns the error message if the request failed.               |
+| `referenceNumber()`       | Returns the PesePay transaction reference.                     |
+| `pollUrl()`               | Returns the polling URL used to check payment status.          |
+| `amount()`                | Returns the transaction amount.                                |
+| `currencyCode()`          | Returns the transaction currency.                              |
+| `transactionServiceFee()` | Returns the service fee charged.                               |
+| `transactionMetadata()`   | Returns additional transaction metadata.                       |
+| `rawData()`               | Returns the complete API response.                             |
+| `metadataCode()`          | Returns the InnBucks payment code (where applicable).          |
+| `metadataQrCode()`        | Returns the InnBucks QR code (where applicable).               |
+| `redirectUrl()`           | Returns the checkout URL for redirect payments.                |
+| `paid()`                  | Returns `true` if the payment has been completed successfully. |
