@@ -49,3 +49,10 @@ Thumbs.db
 *.mov
 *.wmv
 
+# Composer
+/vendor/
+composer.lock
+
+# Local test harness (contains credentials - never commit)
+/test.php
+

@@ -35,6 +35,16 @@ $pesepay = new Pesepay(
 );
 ```
 
+To use the **sandbox** environment (testing only, no real money), pass `true` as the third argument:
+
+```php
+$pesepay = new Pesepay(
+    "INTEGRATION_KEY",
+    "ENCRYPTION_KEY",
+    true
+);
+```
+
 ## 3. Configure Callback URLs
 
 Set the URLs that PesePay will use after processing a payment.
@@ -44,8 +54,8 @@ $pesepay->returnUrl = "https://example.com/gateway/return";
 $pesepay->resultUrl = "https://example.com/gateway/result";
 ```
 
-* **returnUrl** – Where the customer is redirected after completing payment.
-* **resultUrl** – Endpoint that receives the payment result.
+- **returnUrl** – Where the customer is redirected after completing payment.
+- **resultUrl** – Endpoint that receives the payment result.
 
 ---
 
@@ -169,6 +179,71 @@ if ($response->success()) {
 
 }
 ```
+
+---
+
+# Split Payments
+
+Split payments let you act as an **aggregator**: you collect payments on behalf of another (**beneficiary**) merchant, and Pesepay settles your agreed share (commission/service fee) and the beneficiary's share according to the configured split arrangement.
+
+Both the redirect and seamless flows support split payments. Attach the payment metadata to your transaction or payment before submitting it.
+
+## Redirect Flow
+
+```php
+$transaction = $pesepay->createTransaction(
+    $amount,
+    'CURRENCY_CODE',
+    'PAYMENT_REASON',
+    'MERCHANT_REFERENCE' // Optional
+);
+
+// Identify the beneficiary merchant receiving the main payment.
+$transaction->setSplitPayment(
+    'beneficiary@example.com',
+    'PRINCIPAL' // or 'ADD_ON'
+);
+
+$response = $pesepay->initiateTransaction($transaction);
+```
+
+## Seamless Flow
+
+```php
+$payment = $pesepay->createPayment(
+    'CURRENCY_CODE',
+    'PAYMENT_METHOD_CODE',
+    'CUSTOMER_EMAIL',
+    'CUSTOMER_PHONE_NUMBER',
+    'CUSTOMER_NAME'
+);
+
+$payment->setSplitPayment(
+    'beneficiary@example.com',
+    'PRINCIPAL' // or 'ADD_ON'
+);
+
+$response = $pesepay->makeSeamlessPayment(
+    $payment,
+    'Online Transaction',
+    $AMOUNT,
+    $requiredFields,
+    'MERCHANT_REFERENCE' // Optional
+);
+```
+
+## splitAmountMode
+
+`splitAmountMode` determines how your configured master merchant share is applied to the request amount:
+
+| Mode        | Description                                                                                                                       |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `PRINCIPAL` | The request amount is the total charged to the customer. Your share is deducted from it and the beneficiary receives the balance. |
+| `ADD_ON`    | The request amount is the beneficiary's principal. They receive it in full and your share is added on top for the customer.       |
+
+Aliases are accepted and normalised automatically: `PRINCIPAL_AMOUNT` → `PRINCIPAL`; `ADDON`, `ADDED_ON_TOP`, `ON_TOP` → `ADD_ON`.
+
+> **Note:** When your application is configured for split payments, `beneficiaryMerchantEmail` is required on every transaction.
 
 ---
 
